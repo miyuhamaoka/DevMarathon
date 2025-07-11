@@ -1,22 +1,25 @@
+require("dotenv").config();
+
 const express = require("express");
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 
-const port = 社員番号;
+// const port = 社員番号;
+const port = 2924;
 
 const cors = require("cors");
 app.use(cors());
 
 const { Pool } = require("pg");
 const pool = new Pool({
-  user: "x", // PostgreSQLのユーザー名に置き換えてください
-  host: "x",
-  database: "x", // PostgreSQLのデータベース名に置き換えてください
-  password: "x", // PostgreSQLのパスワードに置き換えてください
+  user: process.env.POSTGRES_USER,
+  host: "db",
+  database: process.env.POSTGRES_DB,
+  password: process.env.POSTGRES_PASSWORD,
   port: 5432,
 });
 
-app.listen(port, () => {
+app.listen(port, "0.0.0.0", () => {
   console.log(`Server running on port ${port}`);
 });
 
@@ -37,7 +40,7 @@ app.post("/add-customer", async (req, res) => {
   try {
     const { companyName, industry, contact, location } = req.body;
     const newCustomer = await pool.query(
-      "INSERT INTO customers (company_nam, industry, contact, location) VALUES ($1, $2, $3, $4) RETURNING *",
+      "INSERT INTO customers (company_name, industry, contact, location) VALUES ($1, $2, $3, $4) RETURNING *",
       [companyName, industry, contact, location]
     );
     res.json({ success: true, customer: newCustomer.rows[0] });
@@ -47,4 +50,6 @@ app.post("/add-customer", async (req, res) => {
   }
 });
 
+const path = require("path");
 app.use(express.static("public"));
+app.use('/web', express.static(path.join(__dirname, "../web")));

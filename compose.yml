@@ -14,12 +14,18 @@ services:
     container_name: nodejs
     image: node:22-bullseye
     ports:
-      - "1985:1985"
+      # - "1985:1985"
+      - "2924:2924"
     volumes:
       - ./src/node:/app
       - ./work:/work
+      - ./src/web:/app/src/web
     working_dir: /app
     tty: true # 開発時のみ有効
+    env_file:
+      - .env
+    command: ["npm", "run", "dev"]  # ← ここを追加
+
 
   db:
     container_name: postgres
