@@ -10,9 +10,75 @@
 <body>
     <div class="container mt-5">
         <!-- ここにHTMLを書く -->
+		  <h2 class="mb-4">顧客情報の確認</h2>
+        <table class="table table-bordered">
+            <tbody id="confirm-table-body">
+                <!-- ここに顧客情報を表示 -->
+            </tbody>
+        </table>
+
+        <button id="backBtn" class="btn btn-secondary mr-2">戻る</button>
+        <button id="confirmBtn" class="btn btn-primary">確定して登録</button>
+    </div>
     </div>
     <script type="module">
-        <!-- ここにJSを書く -->
+        // sessionStorageからデータ取得
+        const dataStr = sessionStorage.getItem('addCustomerData');
+        if (!dataStr) {
+            alert('確認するデータがありません。');
+            window.location.href = '/customer/add.html';
+        } else {
+            const data = JSON.parse(dataStr);
+            const tbody = document.getElementById('confirm-table-body');
+            // テーブル行を生成
+            for (const [key, value] of Object.entries(data)) {
+                const tr = document.createElement('tr');
+                const th = document.createElement('th');
+                const td = document.createElement('td');
+                // ラベルを日本語に変換（必要に応じて調整）
+                let label = '';
+                switch (key) {
+                    case 'companyName': label = '会社名'; break;
+                    case 'industry': label = '業種'; break;
+                    case 'contact': label = '連絡先'; break;
+                    case 'location': label = '所在地'; break;
+                    default: label = key; break;
+                }
+                th.textContent = label;
+                td.textContent = value;
+                tr.appendChild(th);
+                tr.appendChild(td);
+                tbody.appendChild(tr);
+            }
+        }
+
+        // 戻るボタン → 入力画面へ戻る（入力値はsessionStorageで保持）
+        document.getElementById('backBtn').addEventListener('click', () => {
+            window.location.href = '/customer/add.html';
+        });
+
+        // 確定ボタン → POSTでサーバーに送信し成功したら一覧へ遷移
+        document.getElementById('confirmBtn').addEventListener('click', () => {
+            fetch('/add-customer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams(JSON.parse(dataStr))
+            })
+            .then(res => res.json())
+            .then(json => {
+                if (json.success) {
+                    alert('顧客情報が正常に保存されました。');
+                    sessionStorage.removeItem('addCustomerData'); // クリア
+                    window.location.href = '/customer/list.html';
+                } else {
+                    alert('保存に失敗しました。');
+                }
+            })
+            .catch(e => {
+                console.error(e);
+                alert('通信エラーが発生しました。');
+            });
+        });
     </script>
     <!-- BootstrapのJavaScriptの読み込み -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>

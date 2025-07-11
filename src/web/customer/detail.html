@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>顧客詳細</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    />
+  </head>
+  <body>
+    <div class="container mt-5">
+      <h1>顧客詳細</h1>
+      <table class="table table-bordered">
+        <tbody id="customer-detail-body">
+          <!-- 顧客データをここに表示 -->
+        </tbody>
+      </table>
+      <button id="delete-btn" class="btn btn-danger">削除</button>
+      <a id="edit-btn" href="#" class="btn btn-primary ml-2">編集</a>
+      <a href="/customer/list.html" class="btn btn-secondary ml-2"
+        >一覧に戻る</a
+      >
+    </div>
+
+    <script type="module">
+      import config from "/config.js";
+
+      // URLパラメータからcustomerIdを取得
+      const params = new URLSearchParams(window.location.search);
+      const customerId = params.get("customerId");
+
+      const detailBody = document.getElementById("customer-detail-body");
+      const deleteBtn = document.getElementById("delete-btn");
+      const editBtn = document.getElementById("edit-btn");
+
+      // 顧客情報を取得して表示
+      fetch(`${config.apiUrl}/customer/${customerId}`)
+        .then((res) => res.json())
+        .then((customer) => {
+          // テーブルに1行ずつ表示
+          for (const key in customer) {
+            const row = document.createElement("tr");
+            const th = document.createElement("th");
+            th.textContent = key;
+            const td = document.createElement("td");
+            td.textContent = customer[key];
+            row.appendChild(th);
+            row.appendChild(td);
+            detailBody.appendChild(row);
+          }
+        })
+        .catch((err) => {
+          alert("顧客情報の取得に失敗しました");
+          console.error(err);
+        });
+
+      // 削除ボタンのイベント
+      deleteBtn.addEventListener("click", () => {
+        if (confirm("削除していいですか？")) {
+          // 削除APIを呼ぶ（DELETEメソッドまたはPOSTで対応）
+          fetch(`${config.apiUrl}/delete-customer/${customerId}`, {
+            method: "DELETE",
+          })
+            .then((res) => {
+              if (res.ok) {
+                alert("削除しました");
+                // 一覧画面に戻る
+                window.location.href = "/customer/list.html";
+              } else {
+                alert("削除に失敗しました");
+              }
+            })
+            .catch((err) => {
+              alert("通信エラーです");
+              console.error(err);
+            });
+        }
+      });
+
+      // 編集画面に遷移
+      editBtn.href = `/customer/update.html?customerId=${customerId}`;
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  </body>
+</html>

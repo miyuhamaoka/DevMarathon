@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Customer List</title>
     <!-- Bootstrap CSSの読み込み -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    />
   </head>
   <body>
     <div class="container mt-5">
@@ -14,8 +17,12 @@
         <thead class="thead-dark">
           <tr>
             <th scope="col">#</th>
-            <th scope="col">Company Name</th>
-            <th scope="col">Contact</th>
+            <th>Company Name</th>
+            <th>Industry</th>
+            <th>Contact</th>
+            <th>Location</th>
+            <th>Created Date</th>
+            <th>Updated Date</th>
           </tr>
         </thead>
         <tbody id="customer-list">
@@ -26,7 +33,7 @@
 
     <script type="module">
       // ExpressサーバのAPIエンドポイントのURL
-	import config from "/config.js";
+      import config from "/config.js";
 
       fetch(`${config.apiUrl}/customers`)
         .then((response) => {
@@ -38,12 +45,31 @@
           const list = document.getElementById("customer-list");
           data.forEach((customer, index) => {
             const row = list.insertRow();
-            const cell1 = row.insertCell(0);
-            const cell2 = row.insertCell(1);
-            const cell3 = row.insertCell(2);
-            cell1.textContent = index + 1;
-            cell2.textContent = customer.company_name;
-            cell3.textContent = customer.contact;
+
+            const cellIndex = row.insertCell();
+            const cellCompany = row.insertCell();
+            const cellIndustry = row.insertCell();
+            const cellContact = row.insertCell();
+            const cellLocation = row.insertCell();
+            const cellCreated = row.insertCell();
+            const cellUpdated = row.insertCell();
+
+            cellIndex.textContent = index + 1;
+
+            // 会社名をリンク化して詳細画面へ
+            cellCompany.innerHTML = `<a href="/customer/detail.html?customerId=${customer.customer_id}">${customer.company_name}</a>`;
+
+            cellIndustry.textContent = customer.industry;
+            cellContact.textContent = customer.contact;
+            cellLocation.textContent = customer.location;
+
+            // 日付はISO文字列をローカル日付形式に変換表示（例）
+            cellCreated.textContent = new Date(
+              customer.created_date
+            ).toLocaleString();
+            cellUpdated.textContent = new Date(
+              customer.updated_date
+            ).toLocaleString();
           });
         })
         .catch((error) => console.error(error));

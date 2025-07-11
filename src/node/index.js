@@ -50,6 +50,65 @@ app.post("/add-customer", async (req, res) => {
   }
 });
 
+// 顧客削除エンドポイント（DELETEメソッド）
+app.get("/customer/:customerId", async (req, res) => {
+	const { customerId } = req.params;
+	try {
+	  const result = await pool.query(
+		"SELECT * FROM customers WHERE customer_id = $1",
+		[customerId]
+	  );
+	  if (result.rows.length === 0) {
+		return res.status(404).json({ error: "Customer not found" });
+	  }
+	  res.json(result.rows[0]);
+	} catch (err) {
+	  console.error(err);
+	  res.status(500).json({ error: "Internal server error" });
+	}
+  });
+
+
+  app.delete("/delete-customer/:customerId", async (req, res) => {
+	const { customerId } = req.params;
+	try {
+	  const result = await pool.query(
+		"DELETE FROM customers WHERE customer_id = $1",
+		[customerId]
+	  );
+	  if (result.rowCount === 0) {
+		return res.status(404).json({ error: "Customer not found" });
+	  }
+	  res.json({ success: true });
+	} catch (err) {
+	  console.error(err);
+	  res.status(500).json({ error: "Internal server error" });
+	}
+  });
+  
+  
+
+  app.put("/update-customer/:customerId", async (req, res) => {
+	const { customerId } = req.params;
+	const { companyName, industry, contact, location } = req.body;
+  
+	try {
+	  const result = await pool.query(
+		`UPDATE customers SET company_name=$1, industry=$2, contact=$3, location=$4, updated_date=NOW() WHERE customer_id=$5`,
+		[companyName, industry, contact, location, customerId]
+	  );
+  
+	  if (result.rowCount === 0) {
+		return res.status(404).json({ error: "顧客が見つかりませんでした" });
+	  }
+	  res.json({ success: true });
+	} catch (err) {
+	  console.error(err);
+	  res.status(500).json({ error: "サーバーエラー" });
+	}
+  });
+  
+  
 const path = require("path");
 app.use(express.static("public"));
 app.use('/web', express.static(path.join(__dirname, "../web")));
